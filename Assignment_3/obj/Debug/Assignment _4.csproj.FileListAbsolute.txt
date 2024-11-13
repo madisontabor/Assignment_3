@@ -1,0 +1,11 @@
+C:\Users\Madison\source\repos\Assignment_3\Assignment_3\bin\Debug\Assignment_3.exe.config
+C:\Users\Madison\source\repos\Assignment_3\Assignment_3\bin\Debug\Assignment_3.exe
+C:\Users\Madison\source\repos\Assignment_3\Assignment_3\bin\Debug\Assignment_3.pdb
+C:\Users\Madison\source\repos\Assignment_3\Assignment_3\obj\Debug\Assignment _4.csproj.AssemblyReference.cache
+C:\Users\Madison\source\repos\Assignment_3\Assignment_3\obj\Debug\Assignment_3.Form1.resources
+C:\Users\Madison\source\repos\Assignment_3\Assignment_3\obj\Debug\Assignment_3.Properties.Resources.resources
+C:\Users\Madison\source\repos\Assignment_3\Assignment_3\obj\Debug\Assignment _4.csproj.GenerateResource.cache
+C:\Users\Madison\source\repos\Assignment_3\Assignment_3\obj\Debug\Assignment _4.csproj.CoreCompileInputs.cache
+C:\Users\Madison\source\repos\Assignment_3\Assignment_3\obj\Debug\Assignment_3.exe
+C:\Users\Madison\source\repos\Assignment_3\Assignment_3\obj\Debug\Assignment_3.pdb
+C:\Users\Madison\source\repos\Assignment_3\Assignment_3\obj\Debug\Assignment_3.DeckForm.resources

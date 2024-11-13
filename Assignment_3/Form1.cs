@@ -13,18 +13,17 @@ using System.IO;
 
 namespace Assignment_3
 {
-    public partial class Form1 : Form
+    public partial class Form1: Form
     {
         private const int Handsize = 5;
-        private const string Path = "C:\\Users\\Madison\\Downloads\\";
-        private readonly List<int> deckList = new List<int>();
-        private readonly int[] handArray = new int[Handsize];
+        private readonly Deck deck;
+        private readonly Card[] handArray = new Card[Handsize];
         private readonly ImageList imageList = new ImageList();
 
         private readonly PictureBox[] pictureBoxes = new PictureBox[Handsize];
         private readonly CheckBox[] checkBoxes = new CheckBox[Handsize];
 
-        private Button dealButton, saveButton, loadButton;
+        private Button dealButton, saveButton, loadButton, showDeckButton;
         public Form1()
         {
             this.Text = "Card Game";
@@ -37,7 +36,7 @@ namespace Assignment_3
 
             InitializeImageList();
 
-            InitializeDeck();
+            deck = new Deck(imageList);
 
             DealHand();
         }
@@ -48,8 +47,19 @@ namespace Assignment_3
 
             for (int i = 0; i < 52; i++)
             {
-                string filePath = Path + $"p{i}.png";
-                imageList.Images.Add(Image.FromFile(filePath));
+                string filePath = Path.Combine("C:\\Users\\Madison\\Downloads\\", $"p{i}.png");
+                try
+                {
+                    imageList.Images.Add(Image.FromFile(filePath));
+                }
+                catch (FileNotFoundException)
+                {
+                    MessageBox.Show($"File not found: {filePath}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error loading image: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
 
         }
@@ -58,167 +68,135 @@ namespace Assignment_3
         {
             dealButton = new Button { Text = "&Deal Hand", Location = new Point(639, 71) };
             dealButton.Click += (s, e) => DealHand();
-
-            saveButton = new Button { Text = "&Save Hand", Location = new Point(484, 71) };
+           
+            saveButton = new Button { Text= "&Save Hand", Location = new Point(484, 71) };
             saveButton.Click += (s, e) => SaveHand();
 
             loadButton = new Button { Text = "&Load Hand", Location = new Point(40, 71) };
             loadButton.Click += (s, e) => LoadHand();
 
+            showDeckButton = new Button { Text = "&Show Deck", Location = new Point(252, 71) };
+            showDeckButton.Click += (s, e) => ShowDeckForm();
+
             this.Controls.Add(dealButton);
             this.Controls.Add(saveButton);
             this.Controls.Add(loadButton);
-
-
+            this.Controls.Add(showDeckButton);
 
             for (int i = 0; i < Handsize; i++)
             {
                 checkBoxes[i] = new CheckBox
                 {
-
-                    Text = $"&Keep {i +1}",
+                    Text = $"&Keep {i + 1}",
                     Location = new Point(40 + i * 160, 128),
                     TabIndex = i + 1,
-                    Checked = i >= 0
+                    Checked = false
                 };
-
                 int index = i;
                 checkBoxes[i].CheckedChanged += (s, e) => ToggleKeep(index);
-  
+
                 this.Controls.Add(checkBoxes[i]);
 
                 pictureBoxes[i] = new PictureBox
                 {
                     Location = new Point(40 + i * 160, 168),
-                    Size = new System.Drawing.Size(100, 150),
+                    Size = new Size(100, 150),
                     Image = null,
                     TabStop = false,
                     BorderStyle = BorderStyle.FixedSingle
-
                 };
-                this.Controls.Add(pictureBoxes[i]);     
+                this.Controls.Add(pictureBoxes[i]);
             }
         }
 
-        private void InitializeDeck()
+        private void ShowDeckForm()
         {
-            for (int i = 0; i < 52; i++)
-            {
-                deckList.Add(i);
-            }
-            Shuffle(deckList);
-        }
+            DeckForm deckForm = new DeckForm(deck, imageList);
+            deckForm.ShowDialog();
+        }   
 
-             private readonly OpenFileDialog openFileDialog = new OpenFileDialog
-                {
-                    Filter = "Card files (*.card)|*.card|All files (*.*)|*.*",
-                    FilterIndex = 1,
-                    RestoreDirectory = true
-                };
+        private readonly OpenFileDialog openFileDialog = new OpenFileDialog
+        {
+            Filter = "Card files (*.card)|*.card|All files (*.*)|*.*",
+            FilterIndex = 1,
+            RestoreDirectory = true
+        };
 
-               private readonly SaveFileDialog saveFileDialog = new SaveFileDialog
-                {
-                    Filter = "Card files (*.card)|*.card|All files (*.*)|*.*",
-                    FilterIndex = 1,
-                    RestoreDirectory = true
-                };
+        private readonly SaveFileDialog saveFileDialog = new SaveFileDialog
+        {
+            Filter = "Card files (*.card)|*.card|All files (*.*)|*.*",
+            FilterIndex = 1,
+            RestoreDirectory = true
+        };
 
-     private void DealHand()
-{
+        private void DealHand()
+        {
+
             for (int i = 0; i < Handsize; i++)
             {
                 if (!checkBoxes[i].Checked)
                 {
-                    if (deckList.Count > 0)
-                    {
-                        handArray[i] = deckList[0];
-                        deckList.RemoveAt(0);
-                    }
-                    else
-                    {
-                        handArray[i] = -1;
-                    }
+                    Card card = deck.DealCard();
+                    handArray[i] = card;
                 }
-                    UpdateCardDisplay(i);
-              
-            }
-}
+                UpdateCardDisplay(i);
 
-            private void ToggleKeep(int index)
+            }
+
+        }
+
+        private void ToggleKeep(int index)
+        {
+            bool isChecked = checkBoxes[index].Checked;
+
+            if (isChecked)
             {
-               bool isChecked = checkBoxes[index].Checked;
-            if(isChecked)   
-            {
-                handArray[index] = deckList.Count > 0 ? deckList[0] : -1;
+                if (handArray[index] == null || handArray[index].Id == -1)
+                {
+                    handArray[index] = deck.DealCard();
+                }
             }
             else
             {
-                handArray[index] = -1;
+                handArray[index] = Card.NoCard;
             }
-                UpdateCardDisplay(index);
-            }
+            UpdateCardDisplay(index);
+        }
 
-            private void UpdateHand()
+        private void UpdateCardDisplay(int index)
+        {
+            if (index >= 0 && index < Handsize)
             {
-                for (int i = 0; i < Handsize; i++)
-                {
-                    if (checkBoxes[i].Checked)
-                    {
-                        handArray[i] = handArray[i] >= 0 ? handArray[i] : -1;
-                    }
-                    else
-                    {
-                        handArray[i] = -1;
-                    }
-                    UpdateCardDisplay(i);
-                }
-
+                pictureBoxes[index].Image = handArray[index]?.Id >= 0 ? imageList.Images[handArray[index].Id] : null;
             }
 
-            private void UpdateCardDisplay(int index)
-            {
-                pictureBoxes[index].Image = handArray[index] >= 0 ? imageList.Images[handArray[index]] : null;
-            }
-
-            private void Shuffle(List<int> list)
-            {
-                Random random = new Random();
-                int n = list.Count;
-                while (n > 1)
-                {
-                    n--;
-                    int k = random.Next(n + 1);
-                (list[n], list[k]) = (list[k], list[n]);
-            }
         }
 
         private void SaveHand()
+        {
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                deck.SaveHand(saveFileDialog.FileName, handArray);
+            }
+        }
+
+        private void LoadHand()
+        {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                if (deck.LoadHand(openFileDialog.FileName, handArray))
                 {
-                    using (System.IO.StreamWriter file = new System.IO.StreamWriter(saveFileDialog.FileName))
+                    for (int i = 0; i < Handsize; i++)
                     {
-                        foreach (int card in handArray)
-                        {
-                            file.WriteLine(card);
-                        }
+                        UpdateCardDisplay(i);
                     }
                 }
             }
 
-            private void LoadHand()
-            {
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    using (System.IO.StreamReader file = new System.IO.StreamReader(openFileDialog.FileName))
-                    {
-                        for (int i = 0; i < Handsize; i++)
-                        {
-                            handArray[i] = int.Parse(file.ReadLine());
-                            UpdateCardDisplay(i);
-                        }
-                    }
-                }
-            }
         }
+       
     }
+}
+
+
+      
